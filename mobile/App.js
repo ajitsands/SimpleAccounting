@@ -4,7 +4,8 @@ import {
   Text, 
   View, 
   TouchableOpacity, 
-  StatusBar 
+  StatusBar,
+  Platform 
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MobileProvider, useMobile } from './src/context/MobileContext';
