@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+web/node_modules/
+mobile/node_modules/
+
+# Production builds
+web/dist/
+web/build/
+mobile/.expo/
+mobile/web-build/
+mobile/dist/
+
+# Uploads & Cache
+uploads/*
+!uploads/.gitkeep
+backend/db/*.db-journal
+
+# Environment & IDE
+.env
+.env.local
+.env.*.local
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

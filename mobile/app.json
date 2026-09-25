@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Simple Accounting",
+    "slug": "simple-accounting",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0284c7"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0284c7"
+      },
+      "package": "com.sandslab.simpleaccounting",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "favicon": "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to attach receipts to transactions.",
+          "cameraPermission": "The app needs camera access to take photos of bills and receipts."
+        }
+      ],
+      "expo-sharing"
+    ]
+  }
+}
