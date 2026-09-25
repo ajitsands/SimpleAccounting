@@ -12,9 +12,17 @@ import HomeScreen from './src/screens/HomeScreen';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import SetupEndpointScreen from './src/screens/SetupEndpointScreen';
 
 function MainApp() {
-  const { theme } = useMobile();
+  const { 
+    theme, 
+    isEndpointConfigured, 
+    setIsEndpointConfigured, 
+    connectionStatus, 
+    resetEndpointConfig,
+    apiBaseUrl 
+  } = useMobile();
   const [activeTab, setActiveTab] = useState('home'); // 'home', 'add', 'history', 'settings'
   const [addInitialType, setAddInitialType] = useState('expense');
 
@@ -25,9 +33,36 @@ function MainApp() {
     setActiveTab('add');
   };
 
+  // If server endpoint has not been configured/tested, show Setup Screen
+  if (!isEndpointConfigured) {
+    return (
+      <SetupEndpointScreen 
+        onConnected={() => {
+          setActiveTab('home');
+        }} 
+      />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#090d16' : '#f8fafc' }]} edges={['top', 'left', 'right']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
+      {/* Disconnection Fallback Warning Banner */}
+      {connectionStatus === 'error' && (
+        <View style={styles.errorBanner}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.errorBannerTitle}>⚠️ Cannot Reach Accounting Server</Text>
+            <Text style={styles.errorBannerSub} numberOfLines={1}>Endpoint: {apiBaseUrl}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.errorFixBtn}
+            onPress={resetEndpointConfig}
+          >
+            <Text style={styles.errorFixBtnText}>⚙️ Fix URL</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       
       {/* Screen View */}
       <View style={styles.screenArea}>
@@ -150,5 +185,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 5,
+  },
+  errorBanner: {
+    backgroundColor: '#dc2626',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  errorBannerTitle: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  errorBannerSub: {
+    color: '#fee2e2',
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    marginTop: 1,
+  },
+  errorFixBtn: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  errorFixBtnText: {
+    color: '#dc2626',
+    fontSize: 11,
+    fontWeight: '900',
   },
 });

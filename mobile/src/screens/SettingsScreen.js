@@ -17,6 +17,7 @@ export default function SettingsScreen() {
     toggleTheme, 
     apiBaseUrl, 
     saveApiBaseUrl, 
+    resetEndpointConfig,
     settings, 
     connectionStatus,
     fetchData 
@@ -30,7 +31,7 @@ export default function SettingsScreen() {
 
   const handleApplyUrl = async (url) => {
     setInputUrl(url);
-    await saveApiBaseUrl(url);
+    await saveApiBaseUrl(url, true);
     Alert.alert('Applied', `API Endpoint set to: ${url}`);
   };
 
@@ -40,7 +41,7 @@ export default function SettingsScreen() {
       const res = await fetch(`${inputUrl}/api/settings.php`);
       const data = await res.json();
       if (data.status === 'success') {
-        await saveApiBaseUrl(inputUrl);
+        await saveApiBaseUrl(inputUrl, true);
         Alert.alert('Connected Successfully!', `Connected to Simple Accounting API.\nDefault Currency: ${data.settings?.default_currency || 'BHD'}`);
       } else {
         Alert.alert('API Error', data.message || 'Unexpected response');
@@ -57,9 +58,16 @@ export default function SettingsScreen() {
       
       {/* Backend API Connection Card */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>BACKEND API CONNECTION</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.cardTitle}>BACKEND API CONNECTION</Text>
+          <TouchableOpacity onPress={resetEndpointConfig}>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: '#0284c7' }}>
+              ⚙️ Full Setup Wizard
+            </Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.cardSubtitle}>
-          Select connection mode for USB cable testing, local Wi-Fi, or production server
+          Configure connection mode for USB cable testing, local Wi-Fi, or cloud server
         </Text>
 
         <View style={styles.statusBox}>
@@ -74,19 +82,19 @@ export default function SettingsScreen() {
         <View style={styles.presetCol}>
           
           <TouchableOpacity 
+            style={[styles.presetBtn, inputUrl.includes('192.168.8.11:3031') && styles.presetBtnActive]}
+            onPress={() => handleApplyUrl('http://192.168.8.11:3031')}
+          >
+            <Text style={styles.presetTitle}>📡 Local Wi-Fi Network</Text>
+            <Text style={styles.presetSub}>http://192.168.8.11:3031</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
             style={[styles.presetBtn, inputUrl.includes('127.0.0.1:3031') && styles.presetBtnActive]}
             onPress={() => handleApplyUrl('http://127.0.0.1:3031')}
           >
             <Text style={styles.presetTitle}>🔌 USB Cable (adb reverse)</Text>
             <Text style={styles.presetSub}>http://127.0.0.1:3031</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.presetBtn, inputUrl.includes('192.168.8.210') && styles.presetBtnActive]}
-            onPress={() => handleApplyUrl('http://192.168.8.210:3031')}
-          >
-            <Text style={styles.presetTitle}>📡 Local Wi-Fi LAN IP</Text>
-            <Text style={styles.presetSub}>http://192.168.8.210:3031</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -111,13 +119,22 @@ export default function SettingsScreen() {
           autoCorrect={false}
         />
 
-        <TouchableOpacity 
-          style={styles.testBtn} 
-          onPress={handleTestConnection}
-          disabled={testing}
-        >
-          <Text style={styles.testBtnText}>{testing ? 'Testing...' : 'Test & Save Connection'}</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+          <TouchableOpacity 
+            style={[styles.testBtn, { flex: 1 }]} 
+            onPress={handleTestConnection}
+            disabled={testing}
+          >
+            <Text style={styles.testBtnText}>{testing ? 'Testing...' : 'Test & Save URL'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.testBtn, { backgroundColor: isDark ? '#1e293b' : '#f1f5f9', borderWidth: 1, borderColor: isDark ? '#334155' : '#cbd5e1' }]} 
+            onPress={resetEndpointConfig}
+          >
+            <Text style={[styles.testBtnText, { color: isDark ? '#ffffff' : '#0f172a' }]}>🔄 Switch Server</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Regional & System Preferences */}

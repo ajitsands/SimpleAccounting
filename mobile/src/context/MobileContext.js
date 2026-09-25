@@ -29,6 +29,7 @@ export const MobileProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'connected', 'error', 'checking'
+  const [isEndpointConfigured, setIsEndpointConfigured] = useState(false);
 
   // Load saved API URL & Theme
   useEffect(() => {
@@ -36,6 +37,11 @@ export const MobileProvider = ({ children }) => {
       try {
         const savedUrl = await AsyncStorage.getItem('sa_api_url');
         if (savedUrl) setApiBaseUrl(savedUrl);
+
+        const configured = await AsyncStorage.getItem('sa_endpoint_configured');
+        if (configured === 'true') {
+          setIsEndpointConfigured(true);
+        }
 
         const savedTheme = await AsyncStorage.getItem('sa_theme');
         if (savedTheme) setTheme(savedTheme);
@@ -45,11 +51,21 @@ export const MobileProvider = ({ children }) => {
     })();
   }, []);
 
-  const saveApiBaseUrl = async (url) => {
+  const saveApiBaseUrl = async (url, markConfigured = true) => {
     const cleanUrl = url.trim().replace(/\/$/, '');
     setApiBaseUrl(cleanUrl);
     await AsyncStorage.setItem('sa_api_url', cleanUrl);
+    if (markConfigured) {
+      setIsEndpointConfigured(true);
+      await AsyncStorage.setItem('sa_endpoint_configured', 'true');
+    }
     fetchData(cleanUrl);
+  };
+
+  const resetEndpointConfig = async () => {
+    setIsEndpointConfigured(false);
+    setConnectionStatus('checking');
+    await AsyncStorage.removeItem('sa_endpoint_configured');
   };
 
   const toggleTheme = async () => {
@@ -63,13 +79,24 @@ export const MobileProvider = ({ children }) => {
       setLoading(true);
       setConnectionStatus('checking');
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
       // 1. Settings
-      const setRes = await fetch(`${baseUrl}/api/settings.php`);
+      const setRes = await fetch(`${baseUrl}/api/settings.php`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!setRes.ok) {
+        throw new Error(`Server returned HTTP ${setRes.status}`);
+      }
+
       const setData = await setRes.json();
       if (setData.status === 'success') {
         setSettings(setData.settings || {});
         setCurrencies(setData.currencies || []);
         setConnectionStatus('connected');
+      } else {
+        throw new Error(setData.message || 'Invalid API response');
       }
 
       // 2. Accounts
@@ -86,7 +113,7 @@ export const MobileProvider = ({ children }) => {
         setCategories(catData.data || []);
       }
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('API Connection Error:', error);
       setConnectionStatus('error');
     } finally {
       setLoading(false);
@@ -141,6 +168,9 @@ export const MobileProvider = ({ children }) => {
         categories,
         loading,
         connectionStatus,
+        isEndpointConfigured,
+        setIsEndpointConfigured,
+        resetEndpointConfig,
         fetchData,
         formatMoney,
         formatDate
