@@ -25,7 +25,7 @@ export default function SetupEndpointScreen({ onConnected }) {
     settings 
   } = useMobile();
 
-  const [inputUrl, setInputUrl] = useState(apiBaseUrl || 'http://192.168.8.11:3031');
+  const [inputUrl, setInputUrl] = useState(apiBaseUrl || 'https://simpleacc.sandslab.com');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null); // { success: boolean, message: string, data?: any }
 
@@ -33,9 +33,9 @@ export default function SetupEndpointScreen({ onConnected }) {
   const styles = getStyles(isDark);
 
   const presets = [
-    { title: '📡 Local Wi-Fi Network', url: 'http://192.168.8.11:3031', desc: 'Default office/home Wi-Fi IP' },
-    { title: '🔌 USB Reverse (ADB)', url: 'http://127.0.0.1:3031', desc: 'Via USB cable debug bridge' },
-    { title: '☁️ Cloud Domain', url: 'https://simpleacc.sandslab.com', desc: 'Secure production server' }
+    { title: '☁️ Cloud Production Server', url: 'https://simpleacc.sandslab.com', desc: 'Secure cloud accounting server (Recommended)' },
+    { title: '📡 Local Wi-Fi Network', url: 'http://192.168.8.11:3031', desc: 'Office or home local Wi-Fi' },
+    { title: '🔌 USB Reverse (ADB)', url: 'http://127.0.0.1:3031', desc: 'Via USB cable debug bridge' }
   ];
 
   const handleSelectPreset = (url) => {

@@ -34,7 +34,7 @@ export const MobileProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'connected', 'error', 'checking'
-  const [isEndpointConfigured, setIsEndpointConfigured] = useState(true);
+  const [isEndpointConfigured, setIsEndpointConfigured] = useState(false);
 
   // Load saved API URL, User, & Theme
   useEffect(() => {
@@ -49,10 +49,10 @@ export const MobileProvider = ({ children }) => {
         }
 
         const configured = await AsyncStorage.getItem('sa_endpoint_configured');
-        if (configured === 'false') {
-          setIsEndpointConfigured(false);
-        } else {
+        if (configured === 'true') {
           setIsEndpointConfigured(true);
+        } else {
+          setIsEndpointConfigured(false);
         }
 
         const savedToken = await AsyncStorage.getItem('sa_mobile_token');

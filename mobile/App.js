@@ -37,18 +37,29 @@ function MainApp() {
     setActiveTab('add');
   };
 
-  // If server endpoint has not been configured/tested, show Setup Screen
+  // While restoring saved session from storage
+  if (authChecking) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
+        <Text style={{ fontSize: 32, marginBottom: 12 }}>🏢</Text>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: '#0f172a' }}>SaNDSLab Simple Accounting</Text>
+        <Text style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Loading session...</Text>
+      </View>
+    );
+  }
+
+  // Step 1: If server endpoint has not been configured/tested, show Setup Screen
   if (!isEndpointConfigured) {
     return (
       <SetupEndpointScreen 
         onConnected={() => {
-          setActiveTab('home');
+          setIsEndpointConfigured(true);
         }} 
       />
     );
   }
 
-  // If endpoint is configured but user is not logged in, show Login Screen
+  // Step 2: If endpoint is configured but user is not logged in, show Login Screen
   if (!isAuthenticated) {
     return <LoginScreen />;
   }
