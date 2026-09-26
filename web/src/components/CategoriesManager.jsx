@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function CategoriesManager() {
-  const { categories, fetchInitialData, addToast, confirmAction } = useApp();
+  const { categories, fetchInitialData, addToast, confirmAction, isAuditor } = useApp();
 
   const [activeTab, setActiveTab] = useState('expense');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,13 +129,15 @@ export default function CategoriesManager() {
           </p>
         </div>
 
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 transition shadow-md shadow-sky-500/20"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Add Category</span>
-        </button>
+        {!isAuditor && (
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 transition shadow-md shadow-sky-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Add Category</span>
+          </button>
+        )}
       </div>
 
       {/* Tabs Switcher */}
@@ -178,20 +180,22 @@ export default function CategoriesManager() {
                   {cat.name}
                 </h3>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => openEdit(cat)}
-                  className="p-1 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50 dark:hover:bg-slate-800"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(cat.id, cat.name)}
-                  className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-slate-800"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {!isAuditor && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => openEdit(cat)}
+                    className="p-1 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50 dark:hover:bg-slate-800"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(cat.id, cat.name)}
+                    className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-slate-800"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">

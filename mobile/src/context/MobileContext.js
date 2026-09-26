@@ -12,6 +12,11 @@ export const MobileProvider = ({ children }) => {
   const defaultApiHost = 'http://192.168.8.11:3031';
   const [apiBaseUrl, setApiBaseUrl] = useState(defaultApiHost);
 
+  // User & Auth State
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState('');
+  const [authChecking, setAuthChecking] = useState(true);
+
   // Settings
   const [settings, setSettings] = useState({
     default_currency: 'BHD',
@@ -31,7 +36,7 @@ export const MobileProvider = ({ children }) => {
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'connected', 'error', 'checking'
   const [isEndpointConfigured, setIsEndpointConfigured] = useState(false);
 
-  // Load saved API URL & Theme
+  // Load saved API URL, User, & Theme
   useEffect(() => {
     (async () => {
       try {
@@ -43,10 +48,19 @@ export const MobileProvider = ({ children }) => {
           setIsEndpointConfigured(true);
         }
 
+        const savedToken = await AsyncStorage.getItem('sa_mobile_token');
+        const savedUser = await AsyncStorage.getItem('sa_mobile_user');
+        if (savedToken && savedUser) {
+          setToken(savedToken);
+          setUser(JSON.parse(savedUser));
+        }
+
         const savedTheme = await AsyncStorage.getItem('sa_theme');
         if (savedTheme) setTheme(savedTheme);
       } catch (e) {
         console.error(e);
+      } finally {
+        setAuthChecking(false);
       }
     })();
   }, []);
@@ -72,6 +86,50 @@ export const MobileProvider = ({ children }) => {
     const next = theme === 'light' ? 'dark' : 'light';
     setTheme(next);
     await AsyncStorage.setItem('sa_theme', next);
+  };
+
+  // Login handler
+  const login = async (username, password) => {
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/auth.php?action=login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, client_type: 'mobile' })
+      });
+      const data = await res.json();
+
+      if (data.status === 'success' && data.token && data.user) {
+        setToken(data.token);
+        setUser(data.user);
+        await AsyncStorage.setItem('sa_mobile_token', data.token);
+        await AsyncStorage.setItem('sa_mobile_user', JSON.stringify(data.user));
+        fetchData(apiBaseUrl);
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, message: data.message || 'Login failed' };
+      }
+    } catch (err) {
+      return { success: false, message: 'Could not connect to accounting server. Check your network or URL.' };
+    }
+  };
+
+  // Logout handler
+  const logout = async () => {
+    try {
+      if (token) {
+        await fetch(`${apiBaseUrl}/api/auth.php?action=logout`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      }
+    } catch (e) {
+      // ignore
+    } finally {
+      setToken('');
+      setUser(null);
+      await AsyncStorage.removeItem('sa_mobile_token');
+      await AsyncStorage.removeItem('sa_mobile_user');
+    }
   };
 
   const fetchData = useCallback(async (baseUrl = apiBaseUrl) => {
@@ -121,8 +179,10 @@ export const MobileProvider = ({ children }) => {
   }, [apiBaseUrl]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (isEndpointConfigured) {
+      fetchData();
+    }
+  }, [isEndpointConfigured, fetchData]);
 
   // Format Money helper
   const formatMoney = (amount, customCurr = null) => {
@@ -161,6 +221,12 @@ export const MobileProvider = ({ children }) => {
       value={{
         theme,
         toggleTheme,
+        user,
+        token,
+        isAuthenticated: !!user,
+        authChecking,
+        login,
+        logout,
         apiBaseUrl,
         saveApiBaseUrl,
         settings,

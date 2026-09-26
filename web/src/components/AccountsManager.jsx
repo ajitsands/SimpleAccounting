@@ -23,7 +23,8 @@ export default function AccountsManager() {
     fetchInitialData, 
     openAddModal, 
     addToast,
-    confirmAction
+    confirmAction,
+    isAuditor
   } = useApp();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -144,23 +145,25 @@ export default function AccountsManager() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => openAddModal('bank_transfer')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition"
-          >
-            <ArrowRightLeft className="w-4 h-4" />
-            <span>Transfer Funds</span>
-          </button>
+        {!isAuditor && (
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => openAddModal('bank_transfer')}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition"
+            >
+              <ArrowRightLeft className="w-4 h-4" />
+              <span>Transfer Funds</span>
+            </button>
 
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 transition shadow-md shadow-sky-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add New Account</span>
-          </button>
-        </div>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 transition shadow-md shadow-sky-500/20"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Add New Account</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Accounts Cards Grid */}
@@ -217,22 +220,24 @@ export default function AccountsManager() {
               {/* Card Actions */}
               <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                 <span className="text-slate-400">Currency: <strong>{acc.currency}</strong></span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => openEdit(acc)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 transition"
-                    title="Edit Account"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(acc.id, acc.account_name)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
-                    title="Deactivate Account"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {!isAuditor && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => openEdit(acc)}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 transition"
+                      title="Edit Account"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(acc.id, acc.account_name)}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
+                      title="Deactivate Account"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
             </div>

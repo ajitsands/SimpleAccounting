@@ -16,7 +16,12 @@ import {
   Globe, 
   TrendingDown, 
   TrendingUp,
-  Wallet
+  Wallet,
+  Users,
+  LogOut,
+  User,
+  ShieldCheck,
+  Eye
 } from 'lucide-react';
 
 export default function HorizontalNavbar() {
@@ -28,7 +33,11 @@ export default function HorizontalNavbar() {
     setActiveTab, 
     openAddModal, 
     fetchInitialData,
-    loading 
+    loading,
+    user,
+    logout,
+    isAdmin,
+    isAuditor
   } = useApp();
 
   const navItems = [
@@ -37,7 +46,8 @@ export default function HorizontalNavbar() {
     { id: 'reports', label: 'Reports & Excel Export', icon: BarChart3, badge: 'XLSX' },
     { id: 'accounts', label: 'Bank & Cash Accounts', icon: Landmark, badge: null },
     { id: 'categories', label: 'Categories', icon: Tags, badge: null },
-    { id: 'settings', label: 'Admin Settings', icon: Settings, badge: null },
+    ...(isAdmin ? [{ id: 'users', label: 'Users & Roles', icon: Users, badge: 'ADMIN' }] : []),
+    ...(isAdmin ? [{ id: 'settings', label: 'Admin Settings', icon: Settings, badge: null }] : [])
   ];
 
   return (
@@ -51,7 +61,7 @@ export default function HorizontalNavbar() {
           <div className="flex items-center gap-3">
             <div className="p-1.5 rounded-xl bg-gradient-to-tr from-sky-500/10 to-indigo-500/10 border border-sky-500/20">
               <img 
-                src={settings.company_logo || "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png"} 
+                src={settings?.company_logo || "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png"} 
                 alt="SaNDSLab Logo" 
                 className="h-8 w-auto object-contain"
                 onError={(e) => { e.target.style.display = 'none'; }}
@@ -60,11 +70,17 @@ export default function HorizontalNavbar() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-heading font-bold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight">
-                  {settings.company_name || 'SaNDSLab Simple Accounting'}
+                  {settings?.company_name || 'SaNDSLab Simple Accounting'}
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                  Live System
-                </span>
+                {isAuditor ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                    <Eye className="w-3 h-3" /> Auditor (Read & Export)
+                  </span>
+                ) : (
+                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    Live System
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden md:block">
                 Financial Management & Expense Tracker
@@ -76,45 +92,51 @@ export default function HorizontalNavbar() {
           <div className="hidden lg:flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               <DollarSign className="w-3.5 h-3.5 text-sky-500" />
-              <span>Currency: <strong className="text-sky-600 dark:text-sky-400">{settings.default_currency || 'BHD'}</strong></span>
+              <span>Currency: <strong className="text-sky-600 dark:text-sky-400">{settings?.default_currency || 'BHD'}</strong></span>
             </div>
 
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Date: <strong className="text-indigo-600 dark:text-indigo-400">{settings.date_format || 'DD/MM/YYYY'}</strong></span>
+              <span>Date: <strong className="text-indigo-600 dark:text-indigo-400">{settings?.date_format || 'DD/MM/YYYY'}</strong></span>
             </div>
 
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               <Globe className="w-3.5 h-3.5 text-amber-500" />
-              <span>TZ: <strong className="text-amber-600 dark:text-amber-400">{settings.timezone || 'Asia/Bahrain'}</strong></span>
+              <span>TZ: <strong className="text-amber-600 dark:text-amber-400">{settings?.timezone || 'Asia/Bahrain'}</strong></span>
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
+          {/* Quick Action Buttons & User Profile */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <button
-              onClick={() => openAddModal('expense')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 transition shadow-sm shadow-rose-500/20 active:scale-95"
-            >
-              <TrendingDown className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">- Expense</span>
-            </button>
+            
+            {/* Action buttons (hidden in Auditor mode) */}
+            {!isAuditor && (
+              <>
+                <button
+                  onClick={() => openAddModal('expense')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-rose-500 hover:bg-rose-600 transition shadow-sm shadow-rose-500/20 active:scale-95"
+                >
+                  <TrendingDown className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">- Expense</span>
+                </button>
 
-            <button
-              onClick={() => openAddModal('income')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm shadow-emerald-500/20 active:scale-95"
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">+ Income</span>
-            </button>
+                <button
+                  onClick={() => openAddModal('income')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm shadow-emerald-500/20 active:scale-95"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">+ Income</span>
+                </button>
 
-            <button
-              onClick={() => openAddModal('expense')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 transition shadow-md shadow-sky-500/20 active:scale-95"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Add Entry</span>
-            </button>
+                <button
+                  onClick={() => openAddModal('expense')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 transition shadow-md shadow-sky-500/20 active:scale-95"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Add Entry</span>
+                </button>
+              </>
+            )}
 
             {/* Refresh */}
             <button
@@ -137,6 +159,30 @@ export default function HorizontalNavbar() {
                 <Moon className="w-3.5 h-3.5 text-slate-700" />
               )}
             </button>
+
+            {/* Logged in User Badge & Logout Button */}
+            {user && (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+                <div className="hidden sm:flex flex-col items-end text-right">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                    {user.full_name}
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400 capitalize">
+                    {user.role === 'admin' ? '👑 Admin' : user.role === 'auditor' ? '🔍 Auditor' : '👤 User'}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={logout}
+                  title="Log out of system"
+                  className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 transition flex items-center gap-1.5"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden xl:inline text-xs font-semibold">Logout</span>
+                </button>
+              </div>
+            )}
+
           </div>
 
         </div>
@@ -163,6 +209,8 @@ export default function HorizontalNavbar() {
                     <span className={`px-1.5 py-0.2 rounded text-[10px] font-extrabold ${
                       isActive 
                         ? 'bg-white/20 text-white' 
+                        : item.badge === 'ADMIN'
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
                         : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                     }`}>
                       {item.badge}
@@ -173,10 +221,10 @@ export default function HorizontalNavbar() {
             })}
           </nav>
 
-          {/* Right helper text */}
+          {/* Right Role / User indicator */}
           <div className="hidden xl:flex items-center gap-2 text-xs text-slate-400">
-            <Wallet className="w-3.5 h-3.5 text-sky-500" />
-            <span>Connected: <strong>localhost:3031</strong></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Logged in: <strong className="text-slate-700 dark:text-slate-200">@{user?.username}</strong></span>
           </div>
         </div>
 

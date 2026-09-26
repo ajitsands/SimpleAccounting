@@ -79,3 +79,24 @@ function getRequestBody() {
     $input = file_get_contents('php://input');
     return json_decode($input, true) ?? [];
 }
+
+// Helper: Get Current Authenticated User from Bearer Token
+function getAuthenticatedUser($pdo) {
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    $token = '';
+
+    if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        $token = trim($matches[1]);
+    } else {
+        $token = trim($_GET['token'] ?? '');
+    }
+
+    if (empty($token)) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare("SELECT id, username, email, full_name, role, status FROM users WHERE auth_token = :token AND status = 'active' LIMIT 1");
+    $stmt->execute(['token' => $token]);
+    return $stmt->fetch() ?: null;
+}
+

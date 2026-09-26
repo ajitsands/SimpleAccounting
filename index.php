@@ -29,6 +29,8 @@ if (strpos($path, 'uploads/') === 0) {
 
 // Route API endpoints
 $apiMap = [
+    'api/auth' => __DIR__ . '/api/auth.php',
+    'api/users' => __DIR__ . '/api/users.php',
     'api/settings' => __DIR__ . '/api/settings.php',
     'api/categories' => __DIR__ . '/api/categories.php',
     'api/accounts' => __DIR__ . '/api/accounts.php',

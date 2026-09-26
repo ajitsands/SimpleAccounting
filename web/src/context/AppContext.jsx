@@ -99,6 +99,107 @@ export const AppProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  // Authentication State
+  const [token, setToken] = useState(() => localStorage.getItem('sa_auth_token') || '');
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sa_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [authChecking, setAuthChecking] = useState(true);
+
+  const isAdmin = user?.role === 'admin';
+  const isAuditor = user?.role === 'auditor';
+  const isRegularUser = user?.role === 'user';
+  const isAuthenticated = !!user;
+
+  // Login handler
+  const login = useCallback(async (username, password) => {
+    try {
+      const res = await fetch('/api/auth.php?action=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, client_type: 'web' })
+      });
+      const data = await res.json();
+
+      if (data.status === 'success' && data.token && data.user) {
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('sa_auth_token', data.token);
+        localStorage.setItem('sa_user', JSON.stringify(data.user));
+        addToast(`Welcome back, ${data.user.full_name}!`, 'success');
+        fetchInitialData();
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || 'Login failed' };
+      }
+    } catch (err) {
+      return { success: false, message: 'Server connection error' };
+    }
+  }, [addToast]);
+
+  // Logout handler
+  const logout = useCallback(async () => {
+    try {
+      if (token) {
+        await fetch('/api/auth.php?action=logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch (e) {
+      // ignore
+    } finally {
+      setToken('');
+      setUser(null);
+      localStorage.removeItem('sa_auth_token');
+      localStorage.removeItem('sa_user');
+      addToast('You have been logged out', 'info');
+    }
+  }, [token, addToast]);
+
+  // Verify active token on startup
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const savedToken = localStorage.getItem('sa_auth_token');
+      if (!savedToken) {
+        setAuthChecking(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/auth.php?action=me&token=${encodeURIComponent(savedToken)}`, {
+          headers: {
+            'Authorization': `Bearer ${savedToken}`
+          }
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.user) {
+          setUser(data.user);
+          localStorage.setItem('sa_user', JSON.stringify(data.user));
+        } else {
+          // Token invalid or expired
+          setToken('');
+          setUser(null);
+          localStorage.removeItem('sa_auth_token');
+          localStorage.removeItem('sa_user');
+        }
+      } catch (e) {
+        // network issue, keep current cached user
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+
+    verifyAuth();
+  }, []);
+
   // Apply theme to document root
   useEffect(() => {
     if (theme === 'dark') {
@@ -149,8 +250,10 @@ export const AppProvider = ({ children }) => {
   }, [addToast]);
 
   useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
+    if (isAuthenticated) {
+      fetchInitialData();
+    }
+  }, [isAuthenticated, fetchInitialData]);
 
   // Helper: Money Formatter supporting 3 decimals for BHD/KWD/OMR, and 2 for INR/AED/SAR
   const formatMoney = useCallback((amount, customCurr = null) => {
@@ -217,12 +320,20 @@ export const AppProvider = ({ children }) => {
   }, [settings.date_format]);
 
   const openAddModal = (type = 'expense') => {
+    if (isAuditor) {
+      addToast('Auditor mode is Read-Only. Creating new entries is disabled.', 'warning');
+      return;
+    }
     setEditingTransaction(null);
     setDefaultModalType(type);
     setIsTransactionModalOpen(true);
   };
 
   const openEditModal = (tx) => {
+    if (isAuditor) {
+      addToast('Auditor mode is Read-Only. Editing entries is disabled.', 'warning');
+      return;
+    }
     setEditingTransaction(tx);
     setDefaultModalType(tx.type || 'expense');
     setIsTransactionModalOpen(true);
@@ -246,6 +357,15 @@ export const AppProvider = ({ children }) => {
       value={{
         theme,
         toggleTheme,
+        user,
+        token,
+        login,
+        logout,
+        isAdmin,
+        isAuditor,
+        isRegularUser,
+        isAuthenticated,
+        authChecking,
         settings,
         setSettings,
         currencies,

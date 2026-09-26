@@ -202,15 +202,73 @@ try {
         }
     }
 
+    // 6. Seed Default Users (Admin, Auditor, Regular User)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `users` (
+      `id` INT AUTO_INCREMENT PRIMARY KEY,
+      `username` VARCHAR(50) NOT NULL UNIQUE,
+      `email` VARCHAR(100) NULL,
+      `full_name` VARCHAR(100) NOT NULL,
+      `password` VARCHAR(255) NOT NULL,
+      `role` ENUM('admin', 'user', 'auditor') NOT NULL DEFAULT 'user',
+      `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      `auth_token` VARCHAR(255) NULL,
+      `last_login` DATETIME NULL,
+      `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX `idx_users_username` (`username`),
+      INDEX `idx_users_token` (`auth_token`),
+      INDEX `idx_users_role` (`role`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $defaultUsers = [
+        [
+            'username' => 'admin',
+            'email' => 'admin@sandslab.com',
+            'full_name' => 'System Administrator',
+            'password' => password_hash('admin123', PASSWORD_DEFAULT),
+            'role' => 'admin',
+            'status' => 'active'
+        ],
+        [
+            'username' => 'auditor',
+            'email' => 'auditor@sandslab.com',
+            'full_name' => 'Compliance Auditor',
+            'password' => password_hash('auditor123', PASSWORD_DEFAULT),
+            'role' => 'auditor',
+            'status' => 'active'
+        ],
+        [
+            'username' => 'user',
+            'email' => 'accounts@sandslab.com',
+            'full_name' => 'Accounts Officer',
+            'password' => password_hash('user123', PASSWORD_DEFAULT),
+            'role' => 'user',
+            'status' => 'active'
+        ]
+    ];
+
+    $stmtUser = $pdo->prepare("INSERT INTO `users` (`username`, `email`, `full_name`, `password`, `role`, `status`) 
+                               VALUES (:username, :email, :full_name, :password, :role, :status) 
+                               ON DUPLICATE KEY UPDATE `full_name`=:full_name, `role`=:role, `status`=:status");
+    foreach ($defaultUsers as $u) {
+        $stmtUser->execute($u);
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'Database migration and seeding completed successfully!',
         'database' => $dbname,
         'default_currency' => 'BHD (Bahraini Dinar - 3 Decimals)',
+        'default_users' => [
+            ['username' => 'admin', 'password' => 'admin123', 'role' => 'admin (Web & Mobile Full Access)'],
+            ['username' => 'user', 'password' => 'user123', 'role' => 'user (Web & Mobile Standard Operations)'],
+            ['username' => 'auditor', 'password' => 'auditor123', 'role' => 'auditor (Web Only - Read & Export Excel/PDF)']
+        ],
         'supported_gcc' => ['Bahrain (BHD)', 'Saudi Arabia (SAR)', 'UAE (AED)', 'Qatar (QAR)', 'Kuwait (KWD)', 'Oman (OMR)'],
         'supported_india' => 'India (INR - ₹)',
         'date_formats' => ['DD/MM/YYYY', 'YYYY-MM-DD', 'MM/DD/YYYY', 'DD-MMM-YYYY']
     ], JSON_PRETTY_PRINT);
+
 
 } catch (Exception $e) {
     http_response_code(500);

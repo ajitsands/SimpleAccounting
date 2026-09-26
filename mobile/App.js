@@ -14,6 +14,7 @@ import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SetupEndpointScreen from './src/screens/SetupEndpointScreen';
+import LoginScreen from './src/screens/LoginScreen';
 
 function MainApp() {
   const { 
@@ -22,7 +23,9 @@ function MainApp() {
     setIsEndpointConfigured, 
     connectionStatus, 
     resetEndpointConfig,
-    apiBaseUrl 
+    apiBaseUrl,
+    isAuthenticated,
+    authChecking
   } = useMobile();
   const [activeTab, setActiveTab] = useState('home'); // 'home', 'add', 'history', 'settings'
   const [addInitialType, setAddInitialType] = useState('expense');
@@ -43,6 +46,11 @@ function MainApp() {
         }} 
       />
     );
+  }
+
+  // If endpoint is configured but user is not logged in, show Login Screen
+  if (!isAuthenticated) {
+    return <LoginScreen />;
   }
 
   return (

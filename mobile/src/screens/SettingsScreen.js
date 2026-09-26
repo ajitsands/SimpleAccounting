@@ -20,7 +20,9 @@ export default function SettingsScreen() {
     resetEndpointConfig,
     settings, 
     connectionStatus,
-    fetchData 
+    fetchData,
+    user,
+    logout 
   } = useMobile();
 
   const [inputUrl, setInputUrl] = useState(apiBaseUrl);
@@ -28,6 +30,17 @@ export default function SettingsScreen() {
 
   const isDark = theme === 'dark';
   const styles = getStyles(isDark);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: logout }
+      ]
+    );
+  };
 
   const handleApplyUrl = async (url) => {
     setInputUrl(url);
@@ -56,6 +69,32 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       
+      {/* User Profile & Logout Card */}
+      {user && (
+        <View style={styles.card}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={[styles.avatarBox, { backgroundColor: user.role === 'admin' ? '#4f46e5' : '#0284c7' }]}>
+                <Text style={styles.avatarText}>{user.full_name?.charAt(0).toUpperCase() || 'U'}</Text>
+              </View>
+              <View>
+                <Text style={styles.userName}>{user.full_name}</Text>
+                <Text style={styles.userRole}>
+                  {user.role === 'admin' ? '👑 Administrator' : '👤 Accounts User'} • @{user.username}
+                </Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity 
+              onPress={handleLogout}
+              style={styles.logoutBtn}
+            >
+              <Text style={styles.logoutText}>🚪 Logout</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       {/* Backend API Connection Card */}
       <View style={styles.card}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -353,5 +392,41 @@ const getStyles = (isDark) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
+  },
+  avatarBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  userName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: isDark ? '#ffffff' : '#0f172a',
+  },
+  userRole: {
+    fontSize: 11,
+    color: isDark ? '#94a3b8' : '#64748b',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  logoutBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: isDark ? '#3b0764' : '#fee2e2',
+    borderWidth: 1,
+    borderColor: isDark ? '#701a75' : '#fecaca',
+  },
+  logoutText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#dc2626',
   },
 });

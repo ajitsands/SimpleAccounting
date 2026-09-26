@@ -31,7 +31,8 @@ export default function TransactionsList({ onViewAttachment }) {
     openVoucherModal,
     fetchInitialData, 
     addToast,
-    confirmAction
+    confirmAction,
+    isAuditor
   } = useApp();
 
   const [transactions, setTransactions] = useState([]);
@@ -447,20 +448,24 @@ export default function TransactionsList({ onViewAttachment }) {
                           >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => openEditModal(tx)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 transition"
-                            title="Edit"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(tx.id, tx.voucher_no || tx.reference_number)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {!isAuditor && (
+                            <>
+                              <button
+                                onClick={() => openEditModal(tx)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-800 transition"
+                                title="Edit"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(tx.id, tx.voucher_no || tx.reference_number)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
 
