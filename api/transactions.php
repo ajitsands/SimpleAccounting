@@ -264,6 +264,42 @@ if ($method === 'POST') {
 
     // Batch Action: Re-Sequence Voucher Numbers Chronologically by Date
     $action = trim($_GET['action'] ?? $data['action'] ?? '');
+
+    // Batch Action: Clear All Transactions (Preserve Categories & Accounts)
+    if ($action === 'clear_all') {
+        $currentUser = getAuthenticatedUser($pdo);
+        $confirm = $_GET['confirm'] ?? $data['confirm'] ?? '';
+        if (!$currentUser || ($currentUser['role'] !== 'admin' && $confirm !== 'yes')) {
+            sendResponse(['status' => 'error', 'message' => 'Admin authorization required to clear transactions.'], 403);
+        }
+
+        try {
+            $pdo->beginTransaction();
+            $pdo->exec("DELETE FROM `transaction_items`");
+            $pdo->exec("DELETE FROM `attachments`");
+            $pdo->exec("DELETE FROM `transactions`");
+            $pdo->exec("UPDATE `accounts` SET `current_balance` = `initial_balance`");
+
+            if (file_exists($uploadDir) && is_dir($uploadDir)) {
+                $files = scandir($uploadDir);
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '..' && $file !== '.gitkeep') {
+                        $filePath = $uploadDir . $file;
+                        if (is_file($filePath)) @unlink($filePath);
+                    }
+                }
+            }
+            $pdo->commit();
+            sendResponse([
+                'status' => 'success',
+                'message' => 'All transactions cleared successfully. Category heads and accounts preserved.'
+            ]);
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            sendResponse(['status' => 'error', 'message' => 'Failed to clear: ' . $e->getMessage()], 500);
+        }
+    }
+
     if ($action === 'resequence') {
         $targetFY = trim($data['fiscal_year'] ?? $_GET['fiscal_year'] ?? '');
         $targetType = trim($data['type'] ?? $_GET['type'] ?? ''); // 'all', 'expense', 'income', 'bank_transfer', 'other'

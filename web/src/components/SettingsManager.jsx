@@ -417,10 +417,18 @@ function ClearTransactionsTool({ onComplete, addToast, confirmAction }) {
 
     setClearing(true);
     try {
-      const res = await apiFetch('/api/clear_transactions.php?confirm=yes', {
-        method: 'POST'
+      const res = await apiFetch('/api/transactions.php?action=clear_all&confirm=yes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear_all', confirm: 'yes' })
       });
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (err) {
+        throw new Error('Please ensure server code is updated via git pull.');
+      }
+
       if (data.status === 'success') {
         addToast('All transactions cleared successfully! Category heads and accounts are preserved.', 'success');
         if (onComplete) onComplete();
@@ -428,7 +436,7 @@ function ClearTransactionsTool({ onComplete, addToast, confirmAction }) {
         addToast(data.message || 'Failed to clear transactions', 'error');
       }
     } catch (e) {
-      addToast('Error communicating with server', 'error');
+      addToast(e.message || 'Error communicating with server', 'error');
     } finally {
       setClearing(false);
     }
