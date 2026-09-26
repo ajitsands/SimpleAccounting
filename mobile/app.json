@@ -4,9 +4,10 @@
     "slug": "simple-accounting",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0284c7"
     },
@@ -15,6 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0284c7"
       },
       "package": "com.sandslab.simpleaccounting",
