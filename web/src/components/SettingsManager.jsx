@@ -12,9 +12,11 @@ import {
   Check, 
   Mail, 
   Phone, 
-  ShieldCheck,
-  Flag,
-  MapPin
+  ShieldCheck, 
+  Flag, 
+  MapPin, 
+  Trash2, 
+  AlertTriangle 
 } from 'lucide-react';
 
 export default function SettingsManager() {
@@ -25,7 +27,10 @@ export default function SettingsManager() {
     timezones, 
     dateFormats, 
     fetchInitialData, 
-    addToast 
+    addToast,
+    confirmAction,
+    isAdmin,
+    user
   } = useApp();
 
   const [formData, setFormData] = useState({
@@ -369,6 +374,83 @@ export default function SettingsManager() {
         <ResequenceTool onComplete={fetchInitialData} addToast={addToast} />
       </div>
 
+      {/* Card 5: Danger Zone - Reset / Clear All Transactions */}
+      {(isAdmin || user?.role === 'admin') && (
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-950/60 shadow-sm space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-rose-900 dark:text-rose-400 font-heading">
+                  Danger Zone: Clear All Transactions
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Reset ledger and wipe all transactions, line items, and receipts while keeping all Category Heads, Accounts, and Users intact
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ClearTransactionsTool onComplete={fetchInitialData} addToast={addToast} confirmAction={confirmAction} />
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function ClearTransactionsTool({ onComplete, addToast, confirmAction }) {
+  const [clearing, setClearing] = useState(false);
+
+  const handleClear = async () => {
+    const confirmed = await confirmAction({
+      title: '⚠️ WIPE ALL TRANSACTIONS?',
+      message: 'This will permanently DELETE all recorded transactions, line items, and uploaded receipts. All Category Heads (Income/Expense), Bank Accounts, Users, and Settings will remain completely safe.',
+      confirmText: 'Yes, Clear All Transactions',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    setClearing(true);
+    try {
+      const res = await apiFetch('/api/clear_transactions.php?confirm=yes', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        addToast('All transactions cleared successfully! Category heads and accounts are preserved.', 'success');
+        if (onComplete) onComplete();
+      } else {
+        addToast(data.message || 'Failed to clear transactions', 'error');
+      }
+    } catch (e) {
+      addToast('Error communicating with server', 'error');
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  return (
+    <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="text-xs text-rose-800 dark:text-rose-300">
+        <p className="font-bold">Preserves: Categories, Accounts, Users & Settings</p>
+        <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">
+          Resets all bank/cash balances back to their initial balances and starts fresh with 0 transactions.
+        </p>
+      </div>
+      <button
+        type="button"
+        disabled={clearing}
+        onClick={handleClear}
+        className="shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+        <span>{clearing ? 'Clearing Transactions...' : 'Clear All Transactions'}</span>
+      </button>
     </div>
   );
 }

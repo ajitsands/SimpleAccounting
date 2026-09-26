@@ -45,6 +45,7 @@ $apiMap = [
     'api/upload' => __DIR__ . '/api/upload.php',
     'api/reports' => __DIR__ . '/api/reports.php',
     'api/export_excel' => __DIR__ . '/api/export_excel.php',
+    'api/clear_transactions' => __DIR__ . '/api/clear_transactions.php',
     'api/migrate' => __DIR__ . '/backend/db/migrate_and_seed.php'
 ];
 
