@@ -30,7 +30,8 @@ export default function TransactionsList({ onViewAttachment }) {
     openEditModal, 
     openVoucherModal,
     fetchInitialData, 
-    addToast 
+    addToast,
+    confirmAction
   } = useApp();
 
   const [transactions, setTransactions] = useState([]);
@@ -76,8 +77,15 @@ export default function TransactionsList({ onViewAttachment }) {
     return () => clearTimeout(delayDebounce);
   }, [fetchTransactions]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+  const handleDelete = async (id, voucherNo) => {
+    const confirmed = await confirmAction({
+      title: 'Delete Transaction',
+      message: `Are you sure you want to delete transaction ${voucherNo ? `(Voucher: ${voucherNo})` : ''}? This action cannot be undone.`,
+      confirmText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/transactions.php?id=${id}`, {
@@ -447,7 +455,7 @@ export default function TransactionsList({ onViewAttachment }) {
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(tx.id)}
+                            onClick={() => handleDelete(tx.id, tx.voucher_no || tx.reference_number)}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
                             title="Delete"
                           >

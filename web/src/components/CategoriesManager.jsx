@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function CategoriesManager() {
-  const { categories, fetchInitialData, addToast } = useApp();
+  const { categories, fetchInitialData, addToast, confirmAction } = useApp();
 
   const [activeTab, setActiveTab] = useState('expense');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,14 +92,23 @@ export default function CategoriesManager() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
+  const handleDelete = async (id, catName) => {
+    const confirmed = await confirmAction({
+      title: 'Delete Category',
+      message: `Are you sure you want to delete category ${catName ? `"${catName}"` : ''}? This action cannot be undone.`,
+      confirmText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/categories.php?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === 'success') {
-        addToast('Category deleted', 'success');
+        addToast('Category deleted successfully', 'success');
         fetchInitialData();
+      } else {
+        addToast(data.message || 'Failed to delete category', 'error');
       }
     } catch (err) {
       addToast('Failed to delete category', 'error');
@@ -177,7 +186,7 @@ export default function CategoriesManager() {
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={() => handleDelete(cat.id)}
+                  onClick={() => handleDelete(cat.id, cat.name)}
                   className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-slate-800"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

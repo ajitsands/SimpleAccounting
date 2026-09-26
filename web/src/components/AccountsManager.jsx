@@ -22,7 +22,8 @@ export default function AccountsManager() {
     currencies, 
     fetchInitialData, 
     openAddModal, 
-    addToast 
+    addToast,
+    confirmAction
   } = useApp();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,14 +107,23 @@ export default function AccountsManager() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to deactivate this account?')) return;
+  const handleDelete = async (id, accName) => {
+    const confirmed = await confirmAction({
+      title: 'Deactivate Account',
+      message: `Are you sure you want to deactivate ${accName ? `"${accName}"` : 'this account'}? Existing transactions and accounting records will remain preserved.`,
+      confirmText: 'Yes, Deactivate',
+      cancelText: 'Cancel',
+      type: 'danger'
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/accounts.php?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === 'success') {
-        addToast('Account deactivated', 'success');
+        addToast('Account deactivated successfully', 'success');
         fetchInitialData();
+      } else {
+        addToast(data.message || 'Failed to deactivate account', 'error');
       }
     } catch (err) {
       addToast('Failed to delete account', 'error');
@@ -216,7 +226,7 @@ export default function AccountsManager() {
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(acc.id)}
+                    onClick={() => handleDelete(acc.id, acc.account_name)}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition"
                     title="Deactivate Account"
                   >

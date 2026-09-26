@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 const AppContext = createContext();
 
@@ -41,6 +43,47 @@ export const AppProvider = ({ children }) => {
   // Modal State for Printable Voucher & Receipt
   const [voucherTransaction, setVoucherTransaction] = useState(null);
 
+  // Confirmation Popup State (Promise-based)
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: 'Are you sure?',
+    message: 'This action cannot be undone.',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    type: 'danger',
+    resolve: null
+  });
+
+  const confirmAction = useCallback(({
+    title = 'Are you sure?',
+    message = 'This action cannot be undone.',
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    type = 'danger'
+  }) => {
+    return new Promise((resolve) => {
+      setConfirmDialog({
+        isOpen: true,
+        title,
+        message,
+        confirmText,
+        cancelText,
+        type,
+        resolve
+      });
+    });
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    if (confirmDialog.resolve) confirmDialog.resolve(true);
+    setConfirmDialog((prev) => ({ ...prev, isOpen: false, resolve: null }));
+  }, [confirmDialog]);
+
+  const handleCancel = useCallback(() => {
+    if (confirmDialog.resolve) confirmDialog.resolve(false);
+    setConfirmDialog((prev) => ({ ...prev, isOpen: false, resolve: null }));
+  }, [confirmDialog]);
+
   // Toast Notifications
   const [toasts, setToasts] = useState([]);
 
@@ -49,7 +92,11 @@ export const AppProvider = ({ children }) => {
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 4500);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   // Apply theme to document root
@@ -222,27 +269,62 @@ export const AppProvider = ({ children }) => {
         closeVoucherModal,
         fetchInitialData,
         addToast,
+        confirmAction,
         toasts
       }}
     >
       {children}
 
-      {/* Toast Notification Container */}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-sm font-medium transition-all duration-300 transform translate-y-0 ${
-              t.type === 'error'
-                ? 'bg-rose-600 text-white'
-                : t.type === 'success'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-            }`}
-          >
-            <span>{t.message}</span>
-          </div>
-        ))}
+      {/* Global Promise-based Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        type={confirmDialog.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
+      {/* Modern Floating Toast Notifications */}
+      <div className="fixed bottom-5 right-5 z-[110] flex flex-col gap-2.5 max-w-sm pointer-events-none">
+        {toasts.map((t) => {
+          const isError = t.type === 'error';
+          const isSuccess = t.type === 'success';
+          const isWarning = t.type === 'warning';
+
+          return (
+            <div
+              key={t.id}
+              className={`pointer-events-auto px-4 py-3 rounded-2xl shadow-2xl border flex items-start gap-3 text-sm font-medium transition-all duration-300 transform translate-y-0 backdrop-blur-md animate-slide-in ${
+                isError
+                  ? 'bg-rose-950/90 text-rose-100 border-rose-800/80 shadow-rose-950/50'
+                  : isSuccess
+                  ? 'bg-emerald-950/90 text-emerald-100 border-emerald-800/80 shadow-emerald-950/50'
+                  : isWarning
+                  ? 'bg-amber-950/90 text-amber-100 border-amber-800/80 shadow-amber-950/50'
+                  : 'bg-slate-900/90 text-slate-100 border-slate-700/80 shadow-slate-950/50 dark:bg-slate-800/95'
+              }`}
+            >
+              <div className="flex-shrink-0 mt-0.5">
+                {isError && <AlertCircle className="w-5 h-5 text-rose-400" />}
+                {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
+                {isWarning && <AlertTriangle className="w-5 h-5 text-amber-400" />}
+                {!isError && !isSuccess && !isWarning && <Info className="w-5 h-5 text-sky-400" />}
+              </div>
+              <div className="flex-1 text-xs sm:text-sm leading-snug">
+                {t.message}
+              </div>
+              <button
+                onClick={() => removeToast(t.id)}
+                className="flex-shrink-0 p-0.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </AppContext.Provider>
   );
