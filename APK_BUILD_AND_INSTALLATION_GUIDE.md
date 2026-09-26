@@ -51,17 +51,17 @@ Ensure `local.properties` in `mobile/android` points to your SDK:
 Set-Content -Path "e:\SimpleAccounting\mobile\android\local.properties" -Value "sdk.dir=$($env:LOCALAPPDATA -replace '\\', '\\')\\Android\\Sdk"
 ```
 
-### Step 5: Compile and Assemble the APK with Gradle
+### Step 5: Compile and Assemble the Standalone APK with Gradle
 ```powershell
 cd e:\SimpleAccounting\mobile\android
-.\gradlew.bat assembleDebug
+.\gradlew.bat assembleRelease
 ```
 
 ### Step 6: Copy the Generated APK to Root Folder
 ```powershell
-Copy-Item "e:\SimpleAccounting\mobile\android\app\build\outputs\apk\debug\app-debug.apk" "e:\SimpleAccounting\SimpleAccounting.apk"
+Copy-Item "e:\SimpleAccounting\mobile\android\app\build\outputs\apk\release\app-release.apk" "e:\SimpleAccounting\SimpleAccounting.apk"
 ```
-The APK is now ready at: **`e:\SimpleAccounting\SimpleAccounting.apk`**
+The standalone APK is now ready at: **`e:\SimpleAccounting\SimpleAccounting.apk`**
 
 ---
 
@@ -124,5 +124,5 @@ If you change Wi-Fi networks or switch to cloud:
 To rebuild the APK at any time in the future, run this single command in PowerShell:
 
 ```powershell
-cd e:\SimpleAccounting\mobile\android; .\gradlew.bat assembleDebug; Copy-Item "app\build\outputs\apk\debug\app-debug.apk" "e:\SimpleAccounting\SimpleAccounting.apk"; Write-Host "✅ APK Build Complete: e:\SimpleAccounting\SimpleAccounting.apk" -ForegroundColor Green
+cd e:\SimpleAccounting; .\update-icons.ps1; cd mobile\android; .\gradlew.bat assembleRelease; Copy-Item "app\build\outputs\apk\release\app-release.apk" "e:\SimpleAccounting\SimpleAccounting.apk" -Force; Write-Host "✅ Standalone APK Ready: e:\SimpleAccounting\SimpleAccounting.apk" -ForegroundColor Green
 ```
