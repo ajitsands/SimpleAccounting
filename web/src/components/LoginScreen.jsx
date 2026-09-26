@@ -6,15 +6,11 @@ import {
   Eye, 
   EyeOff, 
   ShieldCheck, 
-  FileSpreadsheet, 
-  Users, 
-  CheckCircle2, 
-  AlertCircle,
-  Sparkles
+  AlertCircle
 } from 'lucide-react';
 
 export default function LoginScreen() {
-  const { login, settings, addToast } = useApp();
+  const { login, settings } = useApp();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -39,27 +35,21 @@ export default function LoginScreen() {
     }
   };
 
-  const handleQuickFill = (u, p) => {
-    setUsername(u);
-    setPassword(p);
-    setError('');
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-sky-50/50 to-indigo-50/60 flex items-center justify-center p-4 relative overflow-hidden font-sans">
       
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Background Ambient Decorative Circles */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-sky-200/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-200/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 animate-scale-up">
         
-        {/* Main Card */}
-        <div className="bg-slate-900/85 backdrop-blur-xl border border-slate-800/90 rounded-3xl p-7 sm:p-9 shadow-2xl shadow-black/60">
+        {/* Main Card - Crisp White Theme */}
+        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-slate-300/60">
           
           {/* Logo & Header */}
-          <div className="text-center mb-7">
-            <div className="inline-flex p-3 rounded-2xl bg-white/5 border border-white/10 shadow-inner mb-3.5">
+          <div className="text-center mb-8">
+            <div className="inline-flex p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm mb-4">
               <img 
                 src={settings?.company_logo || "https://qrgenerator.sandslab.com/assets/SaNDSLab-LogoForWhite-C43CoLgA.png"} 
                 alt="Logo" 
@@ -67,85 +57,50 @@ export default function LoginScreen() {
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </div>
-            <h1 className="text-2xl font-extrabold text-white font-heading tracking-tight">
+            <h1 className="text-2xl font-extrabold text-slate-900 font-heading tracking-tight">
               {settings?.company_name || 'SaNDSLab Simple Accounting'}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 mt-1.5 font-medium">
               Sign in to manage accounts, transactions & reports
             </p>
           </div>
 
-          {/* Quick Demo Login Chips */}
-          <div className="mb-6 p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-2 px-1">
-              <span className="flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                Quick Login Presets:
-              </span>
-              <span className="text-[10px] text-slate-500 font-normal">Click to autofill</span>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-1.5 text-center">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin', 'admin123')}
-                className="px-2 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition active:scale-95"
-              >
-                👑 Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('user', 'user123')}
-                className="px-2 py-1.5 rounded-xl text-[11px] font-bold bg-sky-500/15 text-sky-300 hover:bg-sky-500/25 border border-sky-500/30 transition active:scale-95"
-              >
-                👤 User
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('auditor', 'auditor123')}
-                className="px-2 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/30 transition active:scale-95"
-              >
-                🔍 Auditor
-              </button>
-            </div>
-          </div>
-
           {/* Error Message */}
           {error && (
-            <div className="mb-5 p-3.5 rounded-2xl bg-rose-950/80 border border-rose-800/80 flex items-start gap-3 text-rose-200 text-xs animate-shake">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-3 text-rose-700 text-sm animate-shake">
+              <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+              <span className="font-medium">{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Username
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <User className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <User className="w-5 h-5" />
                 </div>
                 <input
                   type="text"
                   required
-                  placeholder="Enter username (e.g. admin, user, auditor)"
+                  placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-500/20 focus:bg-white transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-5 h-5" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -153,14 +108,15 @@ export default function LoginScreen() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition"
+                  className="w-full pl-11 pr-11 py-3 rounded-xl text-sm bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-500/20 focus:bg-white transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 transition"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -168,7 +124,7 @@ export default function LoginScreen() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 shadow-lg shadow-sky-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2"
+              className="w-full mt-3 py-3.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-700 hover:via-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 active:scale-[0.98] transition flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -179,19 +135,19 @@ export default function LoginScreen() {
           </form>
 
           {/* Role Policy Notice */}
-          <div className="mt-6 pt-5 border-t border-slate-800 text-[11px] text-slate-400 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-500 space-y-2">
+            <div className="flex items-center gap-1.5 text-slate-700 font-bold">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>Role Permissions:</span>
             </div>
-            <p>• <strong>Admin & Users</strong>: Full access on Web & Mobile apps.</p>
-            <p>• <strong>Auditors</strong>: Web only with Read-Only inspection and Excel/PDF export privileges.</p>
+            <p className="leading-relaxed">• <strong className="text-slate-700">Admin & Users:</strong> Full access on Web & Mobile apps.</p>
+            <p className="leading-relaxed">• <strong className="text-slate-700">Auditors:</strong> Web only with Read-Only inspection and Excel/PDF export privileges.</p>
           </div>
 
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-500 mt-5">
+        <p className="text-center text-xs text-slate-500 mt-6 font-medium">
           &copy; {new Date().getFullYear()} {settings?.company_name || 'SaNDSLab'}. All rights reserved.
         </p>
 

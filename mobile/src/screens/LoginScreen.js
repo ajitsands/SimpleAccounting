@@ -78,25 +78,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Quick Fill Presets */}
-        <View style={styles.presetBox}>
-          <Text style={styles.presetLabel}>⚡ QUICK LOGIN PRESETS:</Text>
-          <View style={styles.presetRow}>
-            <TouchableOpacity 
-              style={styles.presetBtn} 
-              onPress={() => handleQuickFill('admin', 'admin123')}
-            >
-              <Text style={styles.presetBtnText}>👑 Admin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.presetBtn} 
-              onPress={() => handleQuickFill('user', 'user123')}
-            >
-              <Text style={styles.presetBtnText}>👤 User</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Form Box */}
         <View style={styles.card}>
           <Text style={styles.cardHeader}>SIGN IN TO CONTINUE</Text>
