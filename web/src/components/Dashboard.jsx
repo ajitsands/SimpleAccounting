@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -51,14 +52,14 @@ export default function Dashboard({ onViewAttachment }) {
     try {
       setLoading(true);
       // Fetch Reports Summary & Charts
-      const repRes = await fetch('/api/reports.php');
+      const repRes = await apiFetch('/api/reports.php');
       const repData = await repRes.json();
       if (repData.status === 'success') {
         setReportsData(repData);
       }
 
       // Fetch Recent 10 Transactions
-      const txRes = await fetch('/api/transactions.php?limit=10');
+      const txRes = await apiFetch('/api/transactions.php?limit=10');
       const txData = await txRes.json();
       if (txData.status === 'success') {
         setRecentTransactions(txData.data || []);

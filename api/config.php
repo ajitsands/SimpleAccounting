@@ -3,10 +3,17 @@
  * Simple Accounting System - Core Configuration & DB Helper
  */
 
+// Anti-Caching Headers for Browsers and NGINX FastCGI/Proxy Cache
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
+header("Pragma: no-cache");
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("X-Accel-Expires: 0");
+header("X-Accel-Buffering: no");
+
 // Enable CORS for web frontend (Vite port 5173, localhost, mobile apps, production)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);

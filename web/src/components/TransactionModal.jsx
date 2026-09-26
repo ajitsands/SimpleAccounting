@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   X, 
   Upload, 
@@ -218,7 +219,7 @@ export default function TransactionModal() {
       if (attachmentFile) {
         const formData = new FormData();
         formData.append('attachment', attachmentFile);
-        const upRes = await fetch('/api/upload.php', {
+        const upRes = await apiFetch('/api/upload.php', {
           method: 'POST',
           body: formData
         });
@@ -269,7 +270,7 @@ export default function TransactionModal() {
         method = 'PUT';
       }
 
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   Users, 
   UserPlus, 
@@ -39,7 +40,7 @@ export default function UsersManager() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/users.php');
+      const res = await apiFetch('/api/users.php');
       const data = await res.json();
       if (data.status === 'success') {
         setUsers(data.data || []);
@@ -108,7 +109,7 @@ export default function UsersManager() {
         }
       }
 
-      const res = await fetch('/api/users.php', {
+      const res = await apiFetch('/api/users.php', {
         method: editingUser ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -145,7 +146,7 @@ export default function UsersManager() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/users.php?id=${u.id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/users.php?id=${u.id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === 'success') {
         addToast('User deactivated', 'success');

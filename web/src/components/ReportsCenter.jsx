@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   BarChart3, 
   FileSpreadsheet, 
@@ -71,14 +72,14 @@ export default function ReportsCenter() {
     if (!dateFrom || !dateTo) return;
     try {
       setLoading(true);
-      const repRes = await fetch(`/api/reports.php?date_from=${dateFrom}&date_to=${dateTo}`);
+      const repRes = await apiFetch(`/api/reports.php?date_from=${dateFrom}&date_to=${dateTo}`);
       const repData = await repRes.json();
       if (repData.status === 'success') {
         setReportData(repData);
       }
 
       // Also fetch detailed transactions for this range
-      const txRes = await fetch(`/api/transactions.php?date_from=${dateFrom}&date_to=${dateTo}&limit=1000`);
+      const txRes = await apiFetch(`/api/transactions.php?date_from=${dateFrom}&date_to=${dateTo}&limit=1000`);
       const txData = await txRes.json();
       if (txData.status === 'success') {
         setAllTransactions(txData.data || []);

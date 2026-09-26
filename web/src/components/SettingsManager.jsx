@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   Settings, 
   DollarSign, 
@@ -67,7 +68,7 @@ export default function SettingsManager() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch('/api/settings.php', {
+      const res = await apiFetch('/api/settings.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -382,7 +383,7 @@ function ResequenceTool({ onComplete, addToast }) {
     setRunning(true);
     setShowConfirm(false);
     try {
-      const res = await fetch('/api/transactions.php?action=resequence', {
+      const res = await apiFetch('/api/transactions.php?action=resequence', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fiscal_year: fiscalYear, type })

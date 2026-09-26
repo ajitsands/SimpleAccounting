@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   Tags, 
   Plus, 
@@ -71,7 +72,7 @@ export default function CategoriesManager() {
         method = 'PUT';
       }
 
-      const res = await fetch('/api/categories.php', {
+      const res = await apiFetch('/api/categories.php', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -102,7 +103,7 @@ export default function CategoriesManager() {
     });
     if (!confirmed) return;
     try {
-      const res = await fetch(`/api/categories.php?id=${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/categories.php?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === 'success') {
         addToast('Category deleted successfully', 'success');

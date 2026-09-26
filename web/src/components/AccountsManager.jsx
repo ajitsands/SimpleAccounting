@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   Landmark, 
   Wallet, 
@@ -87,7 +88,7 @@ export default function AccountsManager() {
         method = 'PUT';
       }
 
-      const res = await fetch('/api/accounts.php', {
+      const res = await apiFetch('/api/accounts.php', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -118,7 +119,7 @@ export default function AccountsManager() {
     });
     if (!confirmed) return;
     try {
-      const res = await fetch(`/api/accounts.php?id=${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/accounts.php?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === 'success') {
         addToast('Account deactivated successfully', 'success');

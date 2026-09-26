@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { apiFetch } from '../utils/api';
 
 const AppContext = createContext();
 
@@ -119,7 +120,7 @@ export const AppProvider = ({ children }) => {
   // Login handler
   const login = useCallback(async (username, password) => {
     try {
-      const res = await fetch('/api/auth.php?action=login', {
+      const res = await apiFetch('/api/auth.php?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, client_type: 'web' })
@@ -146,7 +147,7 @@ export const AppProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       if (token) {
-        await fetch('/api/auth.php?action=logout', {
+        await apiFetch('/api/auth.php?action=logout', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -174,7 +175,7 @@ export const AppProvider = ({ children }) => {
       }
 
       try {
-        const res = await fetch(`/api/auth.php?action=me&token=${encodeURIComponent(savedToken)}`, {
+        const res = await apiFetch(`/api/auth.php?action=me&token=${encodeURIComponent(savedToken)}`, {
           headers: {
             'Authorization': `Bearer ${savedToken}`
           }
@@ -219,7 +220,7 @@ export const AppProvider = ({ children }) => {
     try {
       setLoading(true);
       // 1. Settings
-      const setRes = await fetch('/api/settings.php');
+      const setRes = await apiFetch('/api/settings.php');
       const setData = await setRes.json();
       if (setData.status === 'success') {
         if (setData.settings) setSettings(setData.settings);
@@ -229,14 +230,14 @@ export const AppProvider = ({ children }) => {
       }
 
       // 2. Accounts
-      const accRes = await fetch('/api/accounts.php');
+      const accRes = await apiFetch('/api/accounts.php');
       const accData = await accRes.json();
       if (accData.status === 'success') {
         setAccounts(accData.data || []);
       }
 
       // 3. Categories
-      const catRes = await fetch('/api/categories.php');
+      const catRes = await apiFetch('/api/categories.php');
       const catData = await catRes.json();
       if (catData.status === 'success') {
         setCategories(catData.data || []);

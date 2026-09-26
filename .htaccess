@@ -1,3 +1,20 @@
+# Anti-Caching rules for Dynamic APIs and HTML Shell
+<IfModule mod_headers.c>
+    # Never cache dynamic HTML and PHP responses or API routes
+    <FilesMatch "\.(php|html)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"
+        Header set Pragma "no-cache"
+        Header set Expires "Mon, 26 Jul 1997 05:00:00 GMT"
+        Header set X-Accel-Expires "0"
+        Header set X-Accel-Buffering "no"
+    </FilesMatch>
+
+    # Allow cached static assets (which have vite content hashes)
+    <FilesMatch "\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2|woff|ttf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_dir.c>
     DirectoryIndex index.html index.php
 </IfModule>

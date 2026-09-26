@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
+import { apiFetch } from '../utils/api';
 import { 
   Search, 
   Filter, 
@@ -56,7 +57,7 @@ export default function TransactionsList({ onViewAttachment }) {
       if (dateTo) params.append('date_to', dateTo);
       params.append('limit', '300');
 
-      const res = await fetch(`/api/transactions.php?${params.toString()}`);
+      const res = await apiFetch(`/api/transactions.php?${params.toString()}`);
       const data = await res.json();
       if (data.status === 'success') {
         setTransactions(data.data || []);
@@ -89,7 +90,7 @@ export default function TransactionsList({ onViewAttachment }) {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/transactions.php?id=${id}`, {
+      const res = await apiFetch(`/api/transactions.php?id=${id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
