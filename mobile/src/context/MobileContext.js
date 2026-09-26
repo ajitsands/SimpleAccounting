@@ -8,8 +8,8 @@ export const MobileProvider = ({ children }) => {
   // Theme: default Light
   const [theme, setTheme] = useState('light');
 
-  // Default API Host (LAN Wi-Fi 192.168.8.11:3031, USB ADB reverse uses localhost:3031)
-  const defaultApiHost = 'http://192.168.8.11:3031';
+  // Default API Host (Production Cloud domain)
+  const defaultApiHost = 'https://simpleacc.sandslab.com';
   const [apiBaseUrl, setApiBaseUrl] = useState(defaultApiHost);
 
   // User & Auth State
@@ -34,17 +34,24 @@ export const MobileProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'connected', 'error', 'checking'
-  const [isEndpointConfigured, setIsEndpointConfigured] = useState(false);
+  const [isEndpointConfigured, setIsEndpointConfigured] = useState(true);
 
   // Load saved API URL, User, & Theme
   useEffect(() => {
     (async () => {
       try {
         const savedUrl = await AsyncStorage.getItem('sa_api_url');
-        if (savedUrl) setApiBaseUrl(savedUrl);
+        if (savedUrl) {
+          setApiBaseUrl(savedUrl);
+        } else {
+          setApiBaseUrl('https://simpleacc.sandslab.com');
+          await AsyncStorage.setItem('sa_api_url', 'https://simpleacc.sandslab.com');
+        }
 
         const configured = await AsyncStorage.getItem('sa_endpoint_configured');
-        if (configured === 'true') {
+        if (configured === 'false') {
+          setIsEndpointConfigured(false);
+        } else {
           setIsEndpointConfigured(true);
         }
 
