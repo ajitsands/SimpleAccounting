@@ -46,7 +46,41 @@ foreach ($apiMap as $route => $file) {
     }
 }
 
-// Health check and system info at root
+// Check for web frontend assets (in dist/assets/ or dist/)
+if (strpos($path, 'assets/') === 0 || strpos($path, 'dist/assets/') === 0) {
+    $cleanPath = preg_replace('#^dist/#', '', $path);
+    $assetPath = __DIR__ . '/dist/' . $cleanPath;
+    if (file_exists($assetPath)) {
+        $ext = strtolower(pathinfo($assetPath, PATHINFO_EXTENSION));
+        $mimes = [
+            'js' => 'application/javascript',
+            'css' => 'text/css',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'svg' => 'image/svg+xml',
+            'json' => 'application/json',
+            'ico' => 'image/x-icon',
+            'woff2' => 'font/woff2',
+            'woff' => 'font/woff',
+            'ttf' => 'font/ttf'
+        ];
+        $contentType = $mimes[$ext] ?? 'application/octet-stream';
+        header("Content-Type: $contentType");
+        readfile($assetPath);
+        exit();
+    }
+}
+
+// Serve Web Frontend SPA (dist/index.html) if available
+$distIndex = __DIR__ . '/dist/index.html';
+if (file_exists($distIndex)) {
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($distIndex);
+    exit();
+}
+
+// Fallback: Health check and API system info at root
 header('Content-Type: application/json');
 echo json_encode([
     'system' => 'SaNDSLab Simple Accounting API',
@@ -65,3 +99,4 @@ echo json_encode([
         'migrate' => '/api/migrate.php'
     ]
 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
